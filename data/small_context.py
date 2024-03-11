@@ -112,3 +112,34 @@ def get_memorization_datasets(n=-1,testfrac=0.15, predict_steps=30):
         if i+1==n:
             break
     return dict(zip(datasets,datas))
+
+def get_local_pe_datasets(n=-1,testfrac=0.15, predict_steps=30):
+    datasets = [
+        '1101_1301',
+        '1101_1303',
+        '1101_1326',
+        '1101_2002',
+        '1301_1303',
+        '1301_1326',
+        '1301_2002',
+        '1303_1326',
+        '1303_2002',
+        '1326_2002'
+    ]
+    datas = []
+    for i,dsname in enumerate(datasets):
+        with open(f"datasets/local_pe/{dsname}.csv") as f:
+            series = pd.read_csv(f, index_col=0, parse_dates=True).values.reshape(-1)
+            # treat as float
+            series = series.astype(float)
+            series = pd.Series(series)
+        if predict_steps is not None:
+            splitpoint = len(series)-predict_steps
+        else:    
+            splitpoint = int(len(series)*(1-testfrac))
+        train = series.iloc[:splitpoint]
+        test = series.iloc[splitpoint:]
+        datas.append((train,test))
+        if i+1==n:
+            break
+    return dict(zip(datasets,datas))
